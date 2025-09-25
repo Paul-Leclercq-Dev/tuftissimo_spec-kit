@@ -1,50 +1,37 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Projet Boutique de Tapis Tufting – Tuftissimo
 
-## Core Principles
+## Objectifs
+- Vendre des tapis faits main
+- Afficher un catalogue produit
+- Expliquer le process de tufting
+- Permettre commandes sur mesure
+- Paiement en ligne sécurisé
+- Contact facile
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## Principes non négociables
+- Qualité code : TypeScript strict, ESLint + Prettier + tests, commits conventionnels
+- Accessibilité : WCAG AA (focus visible, contrastes, ARIA)
+- i18n : ES (par défaut) + FR
+- UI : Next.js App Router + Tailwind CSS + shadcn/ui; design simple, mobile-first
+- Backend : NestJS, REST + OpenAPI, Prisma ORM
+- Base de données : PostgreSQL (SQLite en dev)
+- Paiements : Stripe (Checkout + Webhooks, SCA)
+- Médias : Cloudinary
+- Emails : Resend
+- Sécurité : OWASP ASVS L1, secrets chiffrés, rate limiting API, validation Zod/DTO
+- Observabilité : logs structurés, erreurs capturées (Sentry en prod)
+- Performance : Core Web Vitals "good", API p95 < 250ms
+- SEO : métas, sitemap.xml, robots.txt, OpenGraph
+- DX : npm scripts, Makefile optionnel, hot reload
+- CI/CD : GitHub Actions
+- Docker : multi-stage, docker-compose, labels Traefik SSL
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+## Hors-scope initial
+- Marketplace multi-vendeurs
+- CRM avancé
+- Internationalisation > ES/FR
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
-
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
-
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
-
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
-
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
-
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+## Gouvernance
+- La constitution prévaut sur tout
+- Toute modification doit être documentée et validée
+- Version : 1.0 | Ratified : 2025-09-24
