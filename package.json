@@ -1,16 +1,16 @@
 {
   "name": "tuftissimo_spec-kit",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "pnpm -r test",
     "dev": "pnpm -C apps/web dev & pnpm -C apps/api start:dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "private": true
+  "license": "ISC"
 }
