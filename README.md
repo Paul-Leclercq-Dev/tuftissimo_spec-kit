@@ -15,3 +15,4 @@ Monorepo e-commerce artisanal (Next.js + NestJS)
 - `pnpm test`, `pnpm lint` : qualité
 
 Voir specs/ pour le détail du projet.
+ 
