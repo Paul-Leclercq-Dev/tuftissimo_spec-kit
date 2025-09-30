@@ -7,7 +7,6 @@ async function main() {
       { slug: 'tapis-rouge', name: 'Tapis rouge', priceCents: 3499, stock: 5 },
       { slug: 'tapis-vert', name: 'Tapis vert', priceCents: 2799, stock: 7 }
     ],
-    skipDuplicates: true as any,
   });
 }
 main()

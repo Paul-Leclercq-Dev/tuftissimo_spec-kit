@@ -1,9 +1,21 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  name      String?
+  orders    Order[]
+  contacts  Contact[]
+  createdAt DateTime @default(now())
 }
 
 model Product {
@@ -14,4 +26,44 @@ model Product {
   stock       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  orders      Order[]
+}
+
+model Order {
+  id         Int       @id @default(autoincrement())
+  email      String
+  address    String
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  user       User?     @relation(fields: [userId], references: [id])
+  userId     Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  contacts   Contact[]
+}
+
+model Contact {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  status    String    @default("new")
+  createdAt DateTime  @default(now())
+  order     Order?    @relation(fields: [orderId], references: [id])
+  orderId   Int?
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    Int?
+}
+
+model CustomOrder {
+  id            Int       @id @default(autoincrement())
+  width         Float?
+  height        Float?
+  colors        String?
+  inspirationUrl String?
+  notes         String?
+  status        String    @default("new")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
