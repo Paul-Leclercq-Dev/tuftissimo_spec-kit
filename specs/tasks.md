@@ -190,12 +190,113 @@
 ---
 
 ### 2.7 Module Orders (calculs & création)
-**But** : Créer une commande avec calculs corrects.
-- **Tâches** :
-  - Prisma : `Order`, `OrderItem` (pivot explicite `{ quantity, unitPrice }`).
-  - Service : `computeTotals(items, country)` → **TVA 21%**, shipping **ES 5€ / FR 10€**.
-  - Endpoint : `POST /orders` (retourne `id` + totaux) ; `GET /orders/:id` ; `GET /orders?user=me` (protégé user).
-- **Vérifs** : tests unitaires `computeTotals`; E2E création ordre user/guest.
+# AGENT — MEMORY UPDATE & TASK: Phase 2.7 (Tuftissimo)
+
+## Contexte & vérité actuelle du projet
+- DB: SQLite, Prisma.
+- Modèle "commande 1-ligne" (PAS d’OrderItem, PAS de ProductVariant).
+- `Product` conserve `priceCents?` (base) et `stock?`.
+- `Order` stocke les choix client via enums: `material`, `size`, `backing`.
+- `CustomOrder` sert au devis (pas de paiement en ligne), puis conversion éventuelle en `Order`.
+- Montants en CENTIMES.
+  - `priceCents` = **subtotal HT** (unitHT × quantity)
+  - `totalCents = priceCents + taxCents + shippingCents`
+  - TVA par défaut **21%** (mode "origin" Espagne)
+  - Shipping: **ES = 500**, **FR = 1000**
+
+## Schéma Prisma en vigueur (résumé)
+- `Order`: champs clés `kind`, `status`, `productId?`, `material?`, `size?`, `backing?`, `customOrderId?`, `lineLabel`, `quantity`, `priceCents`(HT), `taxCents`, `shippingCents`, `totalCents`, `currency`, `email`, `address?`, `country?`, `userId?`.
+- `CustomOrder`: préférences (materialCode?, sizeCode?, backing?), `quotedPriceCents?` (HT), lien 1–1 vers `Order` à la conversion.
+- `Product`: `priceCents?`, `stock?`, `slug`, `name`, …
+
+## Règles métier
+- **Catalogue (standard)**: vente directe avec paiement en ligne.
+  - `unitHT` se calcule à partir du `Product.priceCents` (base) et de modificateurs simples:
+    - FACTEURS (provisoires, à externaliser):  
+      - `MATERIAL_FACTOR = { COTTON_A: 1.0, COTTON_B: 1.1, WOOL_A: 1.25 }`
+      - `SIZE_FACTOR     = { S: 1.0, M: 1.3, L: 1.6 }`
+      - `BACKING_ADD_CTS = { ADHESIVE: 300, NON_ADHESIVE: 0 }`
+  - `unitHT = base * MATERIAL_FACTOR[m] * SIZE_FACTOR[s] + BACKING_ADD_CTS[b]`
+  - `subtotalHT = unitHT * quantity`
+  - `taxCents = round(subtotalHT * 21%)`
+  - `shippingCents = ES ? 500 : 1000`
+  - `totalCents = subtotalHT + taxCents + shippingCents`
+  - On **snapshote** tous les montants dans `Order`.
+
+- **Custom (sur-mesure)**: pas de paiement en ligne.
+  - Flux: `POST /custom-quotes` → chiffrage interne `quotedPriceCents` → `accept` → conversion en `Order` (offline).
+  - À la conversion: `unitHT = quotedPriceCents`, calculs identiques, `kind='CUSTOM'`, `customOrderId` rempli.
+
+## À FAIRE (Phase 2.7)
+
+1) **Utilitaire de calcul**
+   - Créer `apps/api/src/orders/compute-totals.ts`
+   - Exporter `computeTotals(unitPriceCents: number, quantity: number, country: 'ES'|'FR', vatMode='origin')`
+     - Par défaut: `vatRate=21`
+     - Retour: `{ subtotalCents, taxCents, shippingCents, totalCents, vatRatePercent }`
+   - Créer un fichier config `apps/api/src/orders/pricing.ts` avec les 3 tables de modificateurs ci-dessus.
+
+2) **Endpoint Catalogue** — `POST /orders`
+   - DTO minimal (validation):
+     ```
+     {
+       kind: 'PRODUCT',
+       productSlug: string,
+       material: 'COTTON_A'|'COTTON_B'|'WOOL_A',
+       size: 'S'|'M'|'L',
+       backing: 'ADHESIVE'|'NON_ADHESIVE',
+       quantity: number >=1,
+       country: 'ES'|'FR',
+       email: string,
+       address?: string
+     }
+     ```
+   - Service:
+     - Charger le `product` via slug, vérifier presence `priceCents` (sinon 400).
+     - Calculer `unitHT` via `pricing.ts`, puis `computeTotals`.
+     - (Optionnel) décrémenter `Product.stock` en transaction si activé.
+     - Créer `Order` (branche Prisma **checked** recommandée, via `connect`):
+       - `kind='PRODUCT'`, `status='pending'`
+       - `product: { connect: { id } }`
+       - `material/size/backing` (enums)
+       - `lineLabel = \`${product.name} — ${material}/${size}/${backing}\``
+       - `quantity`
+       - `priceCents=subtotalCents`, `taxCents`, `shippingCents`, `totalCents`, `currency='EUR'`
+       - `email`, `address??`, `country`, `userId?`
+     - Retourner `{ id, subtotalCents, taxCents, shippingCents, totalCents, currency: 'EUR' }`
+   - (Stripe) créer la session checkout ici **ou** via un `POST /checkout/:orderId` séparé.
+
+3) **Endpoints lecture**
+   - `GET /orders/:id` → Order + champs clefs (`material/size/backing`, montants).
+   - `GET /orders?user=me` (protégé) → filtres et pagination.
+
+4) **Flux Custom**
+   - Déjà en place côté modèle. S’assurer des routes:
+     - `POST /custom-quotes` (création `CustomOrder`)
+     - `PATCH /custom-quotes/:id/price` (set `quotedPriceCents`, `status='quoted'`)
+     - `POST /custom-quotes/:id/accept` (conversion → `Order` sans Stripe)
+   - Conversion: `priceCents=subtotalCents(quotedPriceCents×qty)`; mêmes calculs; `customOrderId` rempli.
+
+5) **Tests**
+   - Unit: `computeTotals` (ES/FR, arrondis, quantités).
+   - E2E:
+     - `POST /orders` (catalogue): crée un Order correct, totaux OK, enums stockés.
+     - `GET /orders/:id` renvoie items/ligne + totaux.
+     - `GET /orders?user=me` filtre par user connecté.
+     - Custom: cycle quote → price → accept → création Order.
+
+## Garde-fous techniques
+- Ne mélange PAS `OrderCreateInput` et les `...Id` dans le même `data`.
+- Validation DTO stricte (enums, quantity >= 1, email valide).
+- Tous les montants en **centimes** (entiers).
+- Journaliser `vatRatePercent` et `country` à la création.
+- Pas d’OrderItem, pas de ProductVariant.
+
+## Livrables attendus
+- `compute-totals.ts`, `pricing.ts`
+- DTO(s) + contrôleur + service `POST /orders`, `GET /orders/:id`, `GET /orders?user=me`
+- Tests unitaires + E2E verts
+- Migrations Prisma à jour (schéma enums sur Order/CustomOrder)
 
 **STOP : Création d’une commande OK (user & guest)**
 
@@ -203,17 +304,17 @@
 
 ## Phase 3 — Frontend Web & Accessibilité
 
-### 3.1 Scaffold Next.js (App Router), TS strict
+### 3.1 Scaffold React (App Router), TS strict
 **But** : Démarrer le front proprement.
 - **Commandes**
   ```bash
-  pnpm create next-app@latest apps/web --ts --eslint
+  pnpm create react-app@latest apps/web --ts --eslint
   pnpm -C apps/web add tailwindcss postcss autoprefixer @shadcn/ui
   pnpm -C apps/web exec tailwindcss init -p
   ```
 - **Vérifs** : app démarre ; TS strict ; base Tailwind.
 
-**STOP : Valider app web Next.js bootée**
+**STOP : Valider app web React bootée**
 
 ---
 

@@ -1,21 +1,21 @@
-import { Controller, Post, Body, UnauthorizedException, HttpCode, Res } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import type { Response } from 'express';
 
-@Controller('auth')
+@ApiTags('admin-auth')
+@Controller('admin')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
-  @Post('admin/login')
-  @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+
+  @Post('login')
+  @ApiOperation({ summary: "Connexion admin et récupération JWT" })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: "Connexion réussie avec JWT retourné" })
+  @ApiResponse({ status: 401, description: "Identifiants invalides" })
+  async login(@Body() dto: LoginDto) {
     const token = await this.authService.login(dto);
-    if (!token) throw new UnauthorizedException();
-    res.cookie('access_token', token, {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', maxAge: 1000 * 60 * 60, // 1h
-    });
-    return { access_token: token }; // optionnel, pour Postman
+    if (!token) throw new UnauthorizedException('Invalid credentials');
+    return { access_token: token };
   }
 }
-

@@ -30,4 +30,4 @@ export class ProductsService {
     const product = await this.findOne(id);
     return prisma.product.delete({ where: { id } });
   }
-}
+} 

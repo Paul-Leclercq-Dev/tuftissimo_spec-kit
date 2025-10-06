@@ -29,7 +29,7 @@ export class CustomOrderService {
     await this.findOne(id);
     const data = {
       ...dto,
-      colors: dto.colors ? JSON.stringify(dto.colors) : null,
+      colors: (dto as any).colors ? JSON.stringify((dto as any).colors) : undefined,
     };
     return prisma.customOrder.update({ where: { id }, data });
   }
