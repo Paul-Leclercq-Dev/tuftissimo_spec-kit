@@ -1,12 +1,9 @@
-# Plan de Projet – Tuftissimo
-
-> **Version**: 2025-09-30 · **Portée**: MVP e-commerce artisanal (Next.js + NestJS/Prisma) · **Langues**: ES/FR
-
 ## 1. Initialisation & Structure
 - Mise en place du **monorepo PNPM** (`apps/web`, `apps/api`, `packages`)
 - Scripts racine: `dev`, `build`, `test`, `lint` · ESLint/Prettier communs
 - **CI/CD GitHub Actions** (install PNPM, build web+api, lint, tests)
 
+  provider = "prisma-client-js"
 ---
 
 ## 2. Modélisation & Backend
