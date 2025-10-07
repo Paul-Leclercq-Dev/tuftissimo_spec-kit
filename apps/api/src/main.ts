@@ -6,6 +6,15 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // Configuration CORS pour permettre les requêtes depuis le frontend
+  app.enableCors({
+    origin: 'http://localhost:3001', // URL du frontend Next.js
+    credentials: true, // Permet l'envoi des cookies HttpOnly
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+  
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()

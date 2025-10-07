@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 
-const ADMIN_EMAIL = 'admin@tuftissimo.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@tuftissimo.com';
 const ADMIN_HASH = process.env.ADMIN_PASSWORD_HASH || '';
 
 @Injectable()

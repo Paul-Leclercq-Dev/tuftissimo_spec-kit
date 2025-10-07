@@ -14,7 +14,7 @@ export const testHttpOnlyCookies = async () => {
     // Test 1: Login
     console.log('1. Test de connexion...');
     const loginResponse = await AuthService.login('test@example.com', 'password');
-    console.log('✅ Connexion réussie:', loginResponse.message);
+    console.log('✅ Connexion réussie:', loginResponse);
     
     // Test 2: Requête authentifiée (le cookie sera automatiquement envoyé)
     console.log('2. Test de requête authentifiée...');

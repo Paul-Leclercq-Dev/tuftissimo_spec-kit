@@ -11,6 +11,11 @@ export class CreateContactDto {
   @IsEmail()
   email: string;
 
+  @ApiPropertyOptional({ example: 'Question sur les tapis personnalisés', description: 'Sujet du message' })
+  @IsOptional()
+  @IsString()
+  subject?: string;
+
   @ApiProperty({ example: "Je souhaite plus d'infos.", description: 'Message texte soumis' })
   @IsNotEmpty()
   @IsString()

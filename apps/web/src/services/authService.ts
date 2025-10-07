@@ -1,18 +1,21 @@
 import { api } from '@/lib/api';
+import { User, SignupDto } from '@/types/api';
 
-interface User {
-  id: string;
+export interface AdminUser {
   email: string;
-  name: string;
   role: string;
+  iat: number;
+  exp: number;
 }
 
-interface LoginResponse {
-  message: string;
+export interface LoginCredentials {
+  email: string;
+  password: string;
 }
 
-interface SignupResponse {
-  message: string;
+export interface LoginResponse {
+  access_token: string;
+  user?: AdminUser;
 }
 
 export class AuthService {
@@ -27,7 +30,7 @@ export class AuthService {
     }
   }
 
-  static async signup(userData: any): Promise<SignupResponse> {
+  static async signup(userData: SignupDto): Promise<SignupResponse> {
     try {
       const response = await api.post('/user/signup', userData);
       return response.data;

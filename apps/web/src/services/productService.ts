@@ -1,13 +1,14 @@
 import { api } from '@/lib/api';
 
 interface Product {
-  id: string;
+  id: number;
+  slug: string;
   name: string;
-  description: string;
-  price: number;
-  category: string;
-  inStock: boolean;
-  imageUrl?: string;
+  description: string | null;
+  priceCents: number;
+  stock: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export class ProductService {

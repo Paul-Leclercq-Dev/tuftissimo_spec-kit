@@ -1,23 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ProductService } from '@/services/productService';
 
 interface Product {
-  id: string;
+  id: number;
+  slug: string;
   name: string;
-  description: string;
-  price: number;
-  category: string;
-  inStock: boolean;
-  imageUrl?: string;
+  description: string | null;
+  priceCents: number;
+  stock: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     loadProducts();
@@ -83,43 +86,36 @@ export default function ProductsPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
             <div key={product.id} className="border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded mb-4"
-                />
-              ) : (
-                <div className="w-full h-48 bg-slate-200 rounded mb-4 flex items-center justify-center">
-                  <span className="text-slate-500">No image</span>
-                </div>
-              )}
+              <div className="w-full h-48 bg-slate-200 rounded mb-4 flex items-center justify-center">
+                <span className="text-slate-500">No image</span>
+              </div>
               
               <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-              <p className="text-slate-600 mb-4">{product.description}</p>
+              <p className="text-slate-600 mb-4">{product.description || 'No description available'}</p>
               
               <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold text-blue-600">
-                  €{product.price.toFixed(2)}
+                  €{(product.priceCents / 100).toFixed(2)}
                 </span>
                 <span className={`px-2 py-1 rounded text-sm ${
-                  product.inStock 
+                  product.stock > 0 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {product.inStock ? 'In Stock' : 'Out of Stock'}
+                  {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
                 </span>
               </div>
               
               <div className="mb-2">
-                <span className="text-sm text-slate-500">Category: {product.category}</span>
+                <span className="text-sm text-slate-500">Slug: {product.slug}</span>
               </div>
               
               <Button 
                 className="w-full"
-                disabled={!product.inStock}
+                disabled={product.stock === 0}
+                onClick={() => router.push(`/order/${product.slug}`)}
               >
-                {product.inStock ? 'Add to Cart' : 'Unavailable'}
+                {product.stock > 0 ? 'Commander' : 'Indisponible'}
               </Button>
             </div>
           ))}
