@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PublicLayout from '@/components/PublicLayout';
-import { ProductService } from '@/services/productService';
 
 interface Product {
   id: number;
@@ -23,18 +22,21 @@ export default function ProductsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    loadProducts();
+    fetchProducts();
   }, []);
 
-  const loadProducts = async () => {
+  const fetchProducts = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const data = await ProductService.getProducts();
-      setProducts(data);
+      const response = await fetch('http://localhost:3000/products');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+      } else {
+        throw new Error('Erreur lors du chargement des produits');
+      }
     } catch (err) {
-      console.error('Error loading products:', err);
-      setError('Impossible de charger les produits. Vérifiez que l\'API est démarrée.');
+      setError('Impossible de charger les produits');
+      console.error('Erreur:', err);
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ export default function ProductsPage() {
             <h2 className="text-2xl font-bold text-tuft-primary mb-2">Oops !</h2>
             <p className="text-gray-600 mb-4">{error}</p>
             <button 
-              onClick={loadProducts}
+              onClick={fetchProducts}
               className="btn-primary"
             >
               Réessayer
@@ -176,7 +178,7 @@ export default function ProductsPage() {
                     
                     {/* Overlay hover */}
                     <div className="absolute inset-0 bg-tuft-primary/0 group-hover:bg-tuft-primary/10 transition-all duration-300 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 bg-white text-tuft-primary px-6 py-3 rounded-lg font-semibold shadow-lg scale-95 group-hover:scale-100 transition-all">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-tuft-primary px-6 py-3 rounded-lg font-semibold shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
                         Voir les détails
                       </div>
                     </div>
@@ -195,7 +197,7 @@ export default function ProductsPage() {
                     )}
                     
                     {/* Actions */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between">
                       <div className="text-2xl font-bold text-tuft-primary">
                         {formatPrice(product.priceCents)}
                       </div>
@@ -216,18 +218,6 @@ export default function ProductsPage() {
                         </button>
                       )}
                     </div>
-
-                    {/* Bouton Commander */}
-                    <button
-                      className="w-full btn-primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/order/${product.slug}`);
-                      }}
-                      disabled={product.stock === 0}
-                    >
-                      {product.stock > 0 ? 'Commander maintenant' : 'Indisponible'}
-                    </button>
                     
                     {/* Détails techniques */}
                     <div className="mt-4 pt-4 border-t border-tuft-light/50">

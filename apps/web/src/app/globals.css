@@ -4,6 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Palette Tuftissimo */
+  --color-tuft-primary: #18534F;
+  --color-tuft-secondary: #226D68;
+  --color-tuft-light: #ECF8F6;
+  --color-tuft-accent: #FEEAA1;
+  --color-tuft-gold: #D6955B;
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
